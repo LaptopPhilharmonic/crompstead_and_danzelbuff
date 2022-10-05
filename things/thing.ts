@@ -1,4 +1,4 @@
-import { RenderNodeID } from "../rendering/render-node";
+import { RenderNodeID } from "../import-manager.js";
 
 let nextId = 0;
 
@@ -10,7 +10,7 @@ export type ThingData = {
     renderNodes: RenderNodeID[];
 }
 
-export class ThingID implements ThingID {
+export class ThingID {
     number: number;
 
     constructor() {

@@ -1,4 +1,4 @@
-import { RenderNode, RenderNodeID } from '../rendering/render-node';
+import { RenderNode, RenderNodeID } from '../import-manager.js';
 export declare class SceneID {
     number: number;
     constructor();
@@ -14,7 +14,12 @@ export declare class Scene {
     private renderNodeIDs;
     constructor(data: SceneData);
     get renderNodes(): RenderNode[];
-    addRenderNode(node: RenderNode | RenderNodeID): void;
+    /** Adds a render node, and returns that node for reference. Unless it doesn't exist - it'll throw an error then. */
+    addRenderNode(node: RenderNode | RenderNodeID): RenderNode;
     addRenderNodes(nodes: RenderNode[] | RenderNodeID[]): void;
+    /** Removes the ID of the RenderNode from this Scene, but does not delete the RenderNode itself */
+    removeRenderNode(node: RenderNode | RenderNodeID): void;
+    /** Removes the IDs of the RenderNodes from this Scene, but does not delete the RenderNodes themselves */
+    removeRenderNodes(nodes: RenderNode[] | RenderNodeID[]): void;
     static byId(id?: SceneID): Scene | null;
 }

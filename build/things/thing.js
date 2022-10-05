@@ -23,4 +23,4 @@ class Thing {
     }
 }
 exports.Thing = Thing;
-//# sourceMappingURL=thing.js.map
+//# sourceMappingURL=Thing.js.map

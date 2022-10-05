@@ -1,4 +1,7 @@
-let nextID = 0;
+import { Scene } from "../import-manager.js";
+import { gameData } from '../ElectronicaGame.js';
+
+let nextID = 1;
 
 export class CameraID {
     number: number;
@@ -12,8 +15,6 @@ export class CameraID {
 const allCameras: {[key: number]: Camera} = {}
 
 export type CameraData = {
-    w: number;
-    h: number;
     x: number;
     y: number;
     zoom?: number;
@@ -24,15 +25,11 @@ export class Camera {
     id: CameraID;
     x: number;
     y: number;
-    w: number;
-    h: number;
     zoom: number = 1;
     on: boolean = true;
 
     constructor(data: CameraData) {
         this.id = new CameraID();
-        this.w = data.w;
-        this.h = data.h;
         this.x = data.x;
         this.y = data.y;
         this.zoom = data.zoom ?? 1;
@@ -43,5 +40,11 @@ export class Camera {
 
     static byId(id: CameraID) {
         return allCameras[id.number];
+    }
+
+    centreOnScene(scene: Scene) {
+        const screen = gameData.globals.screenInfo;
+        this.x = ((scene.w * this.zoom) / 2) - ((screen.width * screen.devicePixelRatio) / 2);
+        this.y = ((scene.h * this.zoom) / 2) - ((screen.height * screen.devicePixelRatio) / 2);
     }
 }

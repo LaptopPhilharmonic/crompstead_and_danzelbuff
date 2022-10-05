@@ -1,0 +1,11 @@
+html {
+    background-color: black;
+}
+
+html, body, .e-wrapper, .e-canvas, #e-game-canvas {
+    margin: 0;
+    padding: 0;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+

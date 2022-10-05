@@ -1,28 +1,78 @@
-import { GameData } from "../game-data/game-data";
-import { Scene } from "../scenes/scene";
-import { Camera } from "./camera";
+import { GameData } from '../import-manager.js';
+import { Scene } from '../import-manager.js';
+import { Camera } from '../import-manager.js';
+import { RenderNode, ImageNode, AnimationNode } from '../import-manager.js';
+import { gameData } from '../ElectronicaGame.js';
 
 export class Renderer {
     private canvas: HTMLCanvasElement;
     private context: CanvasRenderingContext2D;
-    private data: GameData;
-    private images: { [index: string]: HTMLImageElement };
+    private devicePixelRatio: number;
 
-    constructor(canvas: HTMLCanvasElement, gameData: GameData) {
+    constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
-        const possibleContext = this.canvas.getContext("2d");
+        const possibleContext = this.canvas.getContext('2d');
         if (possibleContext === null) {
             throw new Error('Could not get 2D context for <canvas> element');
         }
         this.context = possibleContext;
-        this.data = gameData;
-        this.images = {}
+        this.context.imageSmoothingEnabled = gameData.globals.imageSmoothing;
+        this.devicePixelRatio = gameData.globals.screenInfo.devicePixelRatio;
     }
 
     /**
      * The main scene rendering function. Renders all on-screen RenderNodes in scene supplied as viewed by the camera supplied
      */
     renderScene(scene: Scene, camera: Camera) {
+        const renderTime = new Date().valueOf();
+        this.context.save();
+        this.context.translate(camera.x * -1, camera.y * -1);
+        if (camera.zoom > 1) {
+            this.context.scale(camera.zoom, camera.zoom);
+        }
 
+        scene.renderNodes.forEach((renderNode: RenderNode) => {
+            this.renderNode(renderNode, renderTime, camera);
+        });
+
+        this.context.restore();
+    }
+
+    /**
+     * Work out what kind of node this is and render it as appropriate
+     */
+    renderNode(node: RenderNode, renderTime: number, camera: Camera) {
+        if (node instanceof ImageNode) {
+            this.renderImageNode(node);
+        }
+        if (node instanceof AnimationNode) {
+            this.renderAnimationNode(node, renderTime);
+        }
+        node.forEachChild((childNode: RenderNode) => {
+            this.renderNode(childNode, renderTime, camera);
+        });
+    }
+
+    /**
+     * Draw an ImageNode to the canvas
+     */
+    renderImageNode(node: ImageNode) {
+        const image = gameData.images.byKey[node.imageName];
+        if (image) {
+            const w = node.autoWidth ? image.width : node.w;
+            const h = node.autoHeight ? image.height : node.h;
+            this.context.drawImage(image, node.x, node.y, w, h);
+        }
+    }
+
+    /**
+     * Draw an AnimationNode to the canvas
+     */
+    renderAnimationNode(node: AnimationNode, renderTime: number) {
+        const image = gameData.images.byKey[node.imageName];
+        if (image && renderTime - node.lastRenderTime > node.frameMillis) {
+            node.updateFrame(renderTime);
+        }
+        this.context.drawImage(image, node.currentFrame * node.w, 0, node.w, node.h, node.x, node.y, node.w, node.h);
     }
 }

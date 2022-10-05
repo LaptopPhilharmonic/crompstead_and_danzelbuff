@@ -1,1 +1,0 @@
-{"version":3,"file":"image-node.js","sourceRoot":"","sources":["../../rendering/image-node.ts"],"names":[],"mappings":";;;AAAA,+CAAyE;AAMzE,MAAa,SAAU,SAAQ,wBAAU;IAGrC,YAAY,IAAmB;QAC3B,KAAK,CAAC,IAAI,CAAC,CAAC;QACZ,IAAI,CAAC,SAAS,GAAG,IAAI,CAAC,SAAS,CAAC;IACpC,CAAC;CACJ;AAPD,8BAOC"}
