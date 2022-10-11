@@ -292,6 +292,14 @@ export class RenderNode implements IndexableClass {
         });
     }
 
+    /** Remove all references to this RenderNode and any of its children which would otherwise be floating around */
+    delete() {
+        this.forEachChild((child) => child.delete());
+        this.parent?.removeChild(this);
+        this.scene?.removeRenderNode(this);
+        delete allNodes[this.id.number];
+    }
+
     static byId(id: RenderNodeID): RenderNode | null {
         return allNodes[id.number];
     }
