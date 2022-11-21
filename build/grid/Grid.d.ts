@@ -1,4 +1,5 @@
 import { Maybe } from '../util/typescript-helpers.js';
+import { ThingID, Thing } from '../import-manager.js';
 export declare class GridId {
     number: number;
     constructor();
@@ -10,10 +11,16 @@ export declare class GridSquare {
     walkable: boolean;
     interactionKey: string;
     walkoverKey: string;
+    private thingIds;
     constructor(grid: Grid, x: number, y: number, walkable: boolean);
     get parentGrid(): Grid;
     get isInteractable(): boolean;
     get hasWalkover(): boolean;
+    get things(): Thing[];
+    /** Add a Thing to this square (if it isn't there already) */
+    addThing(thing: Thing | ThingID): void;
+    /** Remove a Thing from this square if it's there */
+    removeThing(thing: Thing | ThingID): void;
     /** Get another square in this grid relative to this square. Negative numbers for up and left, positive for down and right */
     getRelativeNeighbour(relativeX: number, relativeY: number): Maybe<GridSquare>;
     getNeighbourAbove(): Maybe<GridSquare>;
@@ -28,6 +35,7 @@ export declare class Grid {
     squares: {
         [key: string]: GridSquare;
     };
+    private squaresArray;
     /** Pass it an array of strings like this:
      * 'XXX'
      * 'X-X'
@@ -42,5 +50,7 @@ export declare class Grid {
     */
     constructor(basicLayout: string[]);
     getSquare(x: number, y: number): Maybe<GridSquare>;
+    /** Remove a thing from all squares in this grid */
+    removeThing(thing: Thing | ThingID): void;
     static byId(id: GridId): Maybe<Grid>;
 }

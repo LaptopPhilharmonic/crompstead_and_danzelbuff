@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const ElectronicaGame_js_1 = require("./ElectronicaGame.js");
+const ElectronicaGame_1 = require("./ElectronicaGame");
 // Main entry point for Crompstead and Danzelbuff and The Phantom Shoplifter
 window.addEventListener('DOMContentLoaded', () => {
-    const game = new ElectronicaGame_js_1.ElectronicaGame({
+    const game = new ElectronicaGame_1.ElectronicaGame({
         canvas: document.querySelector("#e-game-canvas")
     });
 });
-//# sourceMappingURL=electronica.js.map
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZWxlY3Ryb25pY2EuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi9lbGVjdHJvbmljYS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQUFBLHVEQUFvRDtBQUVwRCw0RUFBNEU7QUFFNUUsTUFBTSxDQUFDLGdCQUFnQixDQUFDLGtCQUFrQixFQUFFLEdBQUcsRUFBRTtJQUM3QyxNQUFNLElBQUksR0FBRyxJQUFJLGlDQUFlLENBQUM7UUFDN0IsTUFBTSxFQUFFLFFBQVEsQ0FBQyxhQUFhLENBQUMsZ0JBQWdCLENBQXNCO0tBQ3hFLENBQUMsQ0FBQztBQUNQLENBQUMsQ0FBQyxDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgRWxlY3Ryb25pY2FHYW1lIH0gZnJvbSBcIi4vRWxlY3Ryb25pY2FHYW1lXCI7XHJcblxyXG4vLyBNYWluIGVudHJ5IHBvaW50IGZvciBDcm9tcHN0ZWFkIGFuZCBEYW56ZWxidWZmIGFuZCBUaGUgUGhhbnRvbSBTaG9wbGlmdGVyXHJcblxyXG53aW5kb3cuYWRkRXZlbnRMaXN0ZW5lcignRE9NQ29udGVudExvYWRlZCcsICgpID0+IHtcclxuICAgIGNvbnN0IGdhbWUgPSBuZXcgRWxlY3Ryb25pY2FHYW1lKHtcclxuICAgICAgICBjYW52YXM6IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoXCIjZS1nYW1lLWNhbnZhc1wiKSBhcyBIVE1MQ2FudmFzRWxlbWVudFxyXG4gICAgfSk7XHJcbn0pO1xyXG4iXX0=

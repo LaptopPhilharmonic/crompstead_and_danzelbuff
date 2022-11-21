@@ -1,4 +1,5 @@
 import { RenderNode, RenderNodeID } from '../import-manager.js';
+import { Maybe } from '../util/typescript-helpers.js';
 export declare class SceneID {
     number: number;
     constructor();
@@ -21,5 +22,5 @@ export declare class Scene {
     removeRenderNode(node: RenderNode | RenderNodeID): void;
     /** Removes the IDs of the RenderNodes from this Scene, but does not delete the RenderNodes themselves */
     removeRenderNodes(nodes: RenderNode[] | RenderNodeID[]): void;
-    static byId(id?: SceneID): Scene | null;
+    static byId(id: Maybe<SceneID>): Maybe<Scene>;
 }

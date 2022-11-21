@@ -9,3 +9,6 @@ html, body, .e-wrapper, .e-canvas, #e-game-canvas {
     image-rendering: crisp-edges;
 }
 
+html {
+    overflow: hidden;
+}

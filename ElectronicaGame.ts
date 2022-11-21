@@ -1,4 +1,4 @@
-import { GameData } from './import-manager.js';
+import { GameData, InputManager, Thing } from './import-manager.js';
 import { Renderer } from './import-manager.js';
 import { stationLobby } from './import-manager.js';
 import { Camera } from './import-manager.js';
@@ -37,35 +37,41 @@ export class ElectronicaGame {
 
         gameData = this.data;
         const dpr = gameData.globals.screenInfo.devicePixelRatio;
-        
-        options.canvas.width = this.data.globals.screenInfo.width * dpr;
-        options.canvas.height = this.data.globals.screenInfo.height * dpr;
-        options.canvas.style.width = (this.data.globals.screenInfo.width) + 'px';
-        options.canvas.style.height = (this.data.globals.screenInfo.height) + 'px';
-
-        // options.canvas.width = options.canvas.offsetWidth;
-        // options.canvas.height = options.canvas.offsetHeight;
 
         this.renderer = new Renderer(options.canvas);
+
         this.data.loadAllAssetsThen(() => {
+            this.renderer.handleCanvasResize();
+
             this.data.currentScene = stationLobby.init();
+            console.log('station lobby intted')
 
             let quit = false;
             let lastRender = 0;
             const frameLength = Math.round(1000 / this.data.globals.frameRate);
             const camera = new Camera({x: 0, y: 0, zoom: 3});
+            const inputManager = new InputManager();
+            inputManager.listenTo(window);
 
             camera.centreOnScene(this.data.currentScene);
 
             const loop = () => {
-                if (new Date().valueOf() - lastRender > frameLength) {
+                const frameTimeStamp = new Date().valueOf();
+                if (frameTimeStamp - lastRender > frameLength) {
+                    const inputData = inputManager.cycleKeyData();
+                    Thing.forEach((thing) => {
+                        thing.handleInput(inputData);
+                        thing.update(frameTimeStamp);
+                    });
                     if (this.data.currentScene) {
+                        this.data.currentScene
                         this.renderer.renderScene(this.data.currentScene, camera);
-                        lastRender = new Date().valueOf();
+                        lastRender = frameTimeStamp;
                     }
                 }
                 if (!quit) {
-                    setTimeout(loop, 10);
+                    const timePassed = new Date().valueOf() - frameTimeStamp;
+                    setTimeout(loop, Math.max(gameData.frameLengthMillis - timePassed, 1));
                 }
             }
 

@@ -6,6 +6,8 @@ export declare class Renderer {
     private context;
     private devicePixelRatio;
     constructor(canvas: HTMLCanvasElement);
+    /** Take care of resizing of the canvas */
+    handleCanvasResize(): void;
     /**
      * The main scene rendering function. Renders all on-screen RenderNodes in scene supplied as viewed by the camera supplied
      */

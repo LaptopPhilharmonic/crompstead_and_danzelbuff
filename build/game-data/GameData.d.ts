@@ -38,6 +38,7 @@ export declare class GameData {
     audio: AudioData;
     currentScene?: Scene;
     afterLoadFunction?: () => unknown;
+    frameLengthMillis: number;
     constructor(globals: GlobalData);
     private addImage;
     private addAudio;

@@ -1,4 +1,5 @@
 import { RenderNode, RenderNodeID } from '../import-manager.js';
+import { Maybe } from '../util/typescript-helpers.js';
 
 let nextId = 1;
 
@@ -73,7 +74,7 @@ export class Scene {
         nodes.forEach((n) => this.removeRenderNode(n));
     }
 
-    static byId(id?: SceneID): Scene | null {
+    static byId(id: Maybe<SceneID>): Maybe<Scene> {
         return id ? allScenes[id.number] : null;
     }
 }

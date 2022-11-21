@@ -1,3 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-//# sourceMappingURL=typescript-helpers.js.map
+exports.filterDefinitely = exports.definitely = void 0;
+/** For when things had better exist or you'll get mad */
+function definitely(maybe) {
+    if (maybe === null || maybe === undefined) {
+        throw new Error('Expected the supplied argument to definitely be not null/undefined');
+    }
+    return maybe;
+}
+exports.definitely = definitely;
+/** Takes an array of <Maybe>s, only returns the ones that defintely aren't null */
+function filterDefinitely(maybes) {
+    return maybes.filter((m) => m !== undefined && m !== null);
+}
+exports.filterDefinitely = filterDefinitely;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoidHlwZXNjcmlwdC1oZWxwZXJzLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vdXRpbC90eXBlc2NyaXB0LWhlbHBlcnMudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7O0FBT0EseURBQXlEO0FBQ3pELFNBQWdCLFVBQVUsQ0FBSSxLQUFlO0lBQ3pDLElBQUksS0FBSyxLQUFLLElBQUksSUFBSSxLQUFLLEtBQUssU0FBUyxFQUFFO1FBQ3ZDLE1BQU0sSUFBSSxLQUFLLENBQUMsb0VBQW9FLENBQUMsQ0FBQztLQUN6RjtJQUNELE9BQU8sS0FBSyxDQUFDO0FBQ2pCLENBQUM7QUFMRCxnQ0FLQztBQUVELG1GQUFtRjtBQUNuRixTQUFnQixnQkFBZ0IsQ0FBSSxNQUFrQjtJQUNsRCxPQUFPLE1BQU0sQ0FBQyxNQUFNLENBQUMsQ0FBQyxDQUFDLEVBQUUsRUFBRSxDQUFDLENBQUMsS0FBSyxTQUFTLElBQUksQ0FBQyxLQUFLLElBQUksQ0FBUSxDQUFDO0FBQ3RFLENBQUM7QUFGRCw0Q0FFQyIsInNvdXJjZXNDb250ZW50IjpbImV4cG9ydCBpbnRlcmZhY2UgSW5kZXhhYmxlQ2xhc3Mge1xyXG4gICAgW2tleTogc3RyaW5nXTogYW55O1xyXG59XHJcblxyXG4vKiogRm9yIHdoZW4gdGhpbmdzIG1heSBvciBtYXkgbm90IGV4aXN0LCB3aXRob3V0IGZhbHNleSBydWJiaXNoICovXHJcbmV4cG9ydCB0eXBlIE1heWJlPFQ+ID0gVCB8IG51bGwgfCB1bmRlZmluZWQ7XHJcblxyXG4vKiogRm9yIHdoZW4gdGhpbmdzIGhhZCBiZXR0ZXIgZXhpc3Qgb3IgeW91J2xsIGdldCBtYWQgKi9cclxuZXhwb3J0IGZ1bmN0aW9uIGRlZmluaXRlbHk8VD4obWF5YmU6IE1heWJlPFQ+KTogVCB7XHJcbiAgICBpZiAobWF5YmUgPT09IG51bGwgfHwgbWF5YmUgPT09IHVuZGVmaW5lZCkge1xyXG4gICAgICAgIHRocm93IG5ldyBFcnJvcignRXhwZWN0ZWQgdGhlIHN1cHBsaWVkIGFyZ3VtZW50IHRvIGRlZmluaXRlbHkgYmUgbm90IG51bGwvdW5kZWZpbmVkJyk7XHJcbiAgICB9XHJcbiAgICByZXR1cm4gbWF5YmU7XHJcbn1cclxuXHJcbi8qKiBUYWtlcyBhbiBhcnJheSBvZiA8TWF5YmU+cywgb25seSByZXR1cm5zIHRoZSBvbmVzIHRoYXQgZGVmaW50ZWx5IGFyZW4ndCBudWxsICovXHJcbmV4cG9ydCBmdW5jdGlvbiBmaWx0ZXJEZWZpbml0ZWx5PFQ+KG1heWJlczogTWF5YmU8VD5bXSk6IFRbXSB7XHJcbiAgICByZXR1cm4gbWF5YmVzLmZpbHRlcigobSkgPT4gbSAhPT0gdW5kZWZpbmVkICYmIG0gIT09IG51bGwpIGFzIFRbXTtcclxufSJdfQ==

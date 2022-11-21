@@ -1,4 +1,4 @@
-import { RenderNodeID } from "../import-manager.js";
+import { RenderNodeID, InputData, GameData } from "../import-manager.js";
 import { Maybe } from "../util/typescript-helpers.js";
 
 let nextId = 1;
@@ -9,11 +9,11 @@ const allThings: {[key: number]: Thing} = {};
 /** Any Thing created or assigned a unique name is referenced here */
 const allThingsByName: {[key: string]: Thing} = {};
 
-export type ThingData = {
+export interface ThingData {
     uniqueName?: string;
     parent?: ThingID;
-    children: ThingID[];
-    renderNodes: RenderNodeID[];
+    children?: ThingID[];
+    renderNodes?: RenderNodeID[];
 }
 
 export class ThingID {
@@ -41,14 +41,14 @@ export class Thing {
     childIds: ThingID[];
     renderNodeIds: RenderNodeID[];
 
-    constructor(data: ThingData) {
+    constructor(data?: ThingData) {
         this.id = new ThingID();
-        this.parentId = data.parent;
-        this.childIds = data.children ?? [];
-        this.renderNodeIds = data.renderNodes ?? [];
+        this.parentId = data?.parent;
+        this.childIds = data?.children ?? [];
+        this.renderNodeIds = data?.renderNodes ?? [];
 
         allThings[this.id.number] = this;
-        if (data.uniqueName) {
+        if (data?.uniqueName) {
             if (allThingsByName[data.uniqueName] !== undefined) {
                 throw new Error(`A Thing with the unique name ${data.uniqueName} already exists`);
             }
@@ -107,11 +107,25 @@ export class Thing {
         }
     }
 
+    /** This is called every cycle of the game engine. Over-write in subclasses to make things do things */
+    update(frameTimeStamp: number) {
+        // Does nothing by default
+    }
+
+    /** This is called every cycle of the game engine. Over-write in subclasses to handle input if needed */
+    handleInput(inputData: InputData) {
+        // Does nothing by default
+    }
+
     static byId(id: ThingID): Maybe<Thing> {
         return allThings[id.number];
     }
 
     static byName(name: ThingName): Maybe<Thing> {
         return allThingsByName[name.value];
+    }
+
+    static forEach(fn: (thing: Thing) => unknown) {
+        Object.values(allThings).forEach(fn);
     }
 }

@@ -1,4 +1,4 @@
-import { ElectronicaGame } from "./ElectronicaGame.js";
+import { ElectronicaGame } from "./ElectronicaGame";
 
 // Main entry point for Crompstead and Danzelbuff and The Phantom Shoplifter
 

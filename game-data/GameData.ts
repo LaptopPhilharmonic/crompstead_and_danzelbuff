@@ -46,6 +46,7 @@ export class GameData {
     audio: AudioData;
     currentScene?: Scene;
     afterLoadFunction?: () => unknown;
+    frameLengthMillis: number;
 
 
     constructor(globals: GlobalData) {
@@ -60,6 +61,8 @@ export class GameData {
         }
 
         this.events = {};
+
+        this.frameLengthMillis = Math.round(1000 / globals.frameRate)
     }
 
     private addImage(key: string, image: HTMLImageElement) {

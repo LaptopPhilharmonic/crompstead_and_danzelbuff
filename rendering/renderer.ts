@@ -1,8 +1,8 @@
-import { GameData } from '../import-manager.js';
 import { Scene } from '../import-manager.js';
 import { Camera } from '../import-manager.js';
 import { RenderNode, ImageNode, AnimationNode } from '../import-manager.js';
 import { gameData } from '../ElectronicaGame.js';
+import * as displayHelpers from '../util/display-helpers';
 
 export class Renderer {
     private canvas: HTMLCanvasElement;
@@ -18,6 +18,21 @@ export class Renderer {
         this.context = possibleContext;
         this.context.imageSmoothingEnabled = gameData.globals.imageSmoothing;
         this.devicePixelRatio = gameData.globals.screenInfo.devicePixelRatio;
+
+        window.addEventListener('resize', () => {
+            this.handleCanvasResize();
+        });
+    }
+
+    /** Take care of resizing of the canvas */
+    handleCanvasResize() {
+        gameData.globals.screenInfo = displayHelpers.getScreenInfo();
+        const dpr = gameData.globals.screenInfo.devicePixelRatio;
+        this.canvas.width = gameData.globals.screenInfo.width * dpr;
+        this.canvas.height = gameData.globals.screenInfo.height * dpr;
+        this.canvas.style.width = (gameData.globals.screenInfo.width) + 'px';
+        this.canvas.style.height = (gameData.globals.screenInfo.height) + 'px';
+        this.context.imageSmoothingEnabled = gameData.globals.imageSmoothing;
     }
 
     /**
@@ -61,7 +76,7 @@ export class Renderer {
         if (image) {
             const w = node.autoWidth ? image.width : node.w;
             const h = node.autoHeight ? image.height : node.h;
-            this.context.drawImage(image, node.x, node.y, w, h);
+            this.context.drawImage(image, node.x + node.offsetX, node.y + node.offsetY, w, h);
         }
     }
 
@@ -73,6 +88,6 @@ export class Renderer {
         if (image && renderTime - node.lastRenderTime > node.frameMillis) {
             node.updateFrame(renderTime);
         }
-        this.context.drawImage(image, node.currentFrame * node.w, 0, node.w, node.h, node.x, node.y, node.w, node.h);
+        this.context.drawImage(image, node.currentFrame * node.w, 0, node.w, node.h, node.x + node.offsetX, node.y + node.offsetY, node.w, node.h);
     }
 }

@@ -1,6 +1,6 @@
 import { Location } from '../import-manager.js';
 import { Grid } from '../import-manager.js';
-import { AnimationNode } from '../import-manager.js';
+import { AnimationNode, Crompstead } from '../import-manager.js';
 
 export function init(): Location { 
     const lobby = new Location(240, 160, 'places/station-lobby.png', new Grid([
@@ -31,15 +31,9 @@ export function init(): Location {
     lobby.addGridImage(8, 2, 'objects/water-cooler.png');
     lobby.addGridImage(9, 2, 'objects/station-bin.png');
 
-    const crompstead = new AnimationNode({
-        imageName: 'people/crompstead/walking-d.png',
-        w: 64,
-        h: 64,
-        frameMillis: 250,
-        scene: lobby.id,
-    });
-
-    lobby.addGridAnimation(2, 7, crompstead);
+    const crompstead = new Crompstead;
+    crompstead.goesTo(lobby, 2, 7);
+    crompstead.acceptingInput = true;
 
     return lobby;
 }

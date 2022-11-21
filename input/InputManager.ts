@@ -37,7 +37,7 @@ export class KeyData {
     }
 }
 
-export interface AllKeyData {
+export interface InputData {
     up: KeyData;
     down: KeyData;
     left: KeyData;
@@ -113,7 +113,7 @@ export class InputManager {
         }        
     }
 
-    cycleKeyData(): AllKeyData {
+    cycleKeyData(): InputData {
         const keyData = {
             up: this.getKeyData(this.keys.up, this.previousKeys.up),
             down: this.getKeyData(this.keys.down, this.previousKeys.down),

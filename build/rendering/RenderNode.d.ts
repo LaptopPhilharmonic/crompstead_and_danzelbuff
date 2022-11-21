@@ -13,7 +13,7 @@ export declare enum Units {
     px = "px",
     pc = "%"
 }
-export declare type RenderNodeData = {
+export interface RenderNodeData {
     /** Default: 0 */
     x?: Maybe<number>;
     /** Default: scene */
@@ -41,7 +41,11 @@ export declare type RenderNodeData = {
     parent?: RenderNodeID;
     children?: RenderNodeID[];
     scene?: SceneID;
-};
+    /** How many pixels to add (or subtract) when positioning this RenderNode */
+    offsetX?: number;
+    /** How many pixels to add (or subtract) when positioning this RenderNode */
+    offsetY?: number;
+}
 export declare class RenderNode implements IndexableClass {
     id: RenderNodeID;
     [key: string]: any;
@@ -60,6 +64,8 @@ export declare class RenderNode implements IndexableClass {
     private sceneId?;
     private parentId?;
     children: RenderNodeID[];
+    offsetX: number;
+    offsetY: number;
     constructor(data: RenderNodeData);
     get parent(): RenderNode | null;
     set parent(p: RenderNode | RenderNodeID | null);
@@ -67,10 +73,8 @@ export declare class RenderNode implements IndexableClass {
     private getXYWH;
     private setXYWH;
     get x(): number;
-    set x(x: number);
     setX(x: number, unit?: Units, relativeTo?: RelativeTo): void;
     get y(): number;
-    set y(y: number);
     setY(y: number, unit?: Units, relativeTo?: RelativeTo): void;
     get w(): number;
     set w(w: number);
@@ -86,5 +90,7 @@ export declare class RenderNode implements IndexableClass {
     set scene(scene: Maybe<Scene> | SceneID);
     get hasChildren(): boolean;
     forEachChild(fn: (childNode: RenderNode) => void): void;
+    /** Remove all references to this RenderNode and any of its children which would otherwise be floating around */
+    delete(): void;
     static byId(id: RenderNodeID): RenderNode | null;
 }

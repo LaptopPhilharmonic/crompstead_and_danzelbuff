@@ -1,4 +1,5 @@
-import { Maybe } from '../util/typescript-helpers.js';
+import { Maybe, filterDefinitely } from '../util/typescript-helpers.js';
+import { ThingID, Thing } from '../import-manager.js';
 
 /** For managing data for grid-based game logic */
 
@@ -21,6 +22,7 @@ export class GridSquare {
     walkable: boolean;
     interactionKey: string;
     walkoverKey: string;
+    private thingIds: ThingID[] = [];
 
     constructor(grid: Grid, x: number, y: number, walkable: boolean) {
         this.gridId = grid.id;
@@ -45,6 +47,27 @@ export class GridSquare {
 
     get hasWalkover(): boolean {
         return this.walkoverKey !== '';
+    }
+
+    get things(): Thing[] {
+        return filterDefinitely(this.thingIds.map((id) => Thing.byId(id)));
+    }
+
+    /** Add a Thing to this square (if it isn't there already) */
+    addThing(thing: Thing | ThingID) {
+        const id = thing instanceof Thing ? thing.id : thing;
+        if (!this.thingIds.includes(id)) {
+            this.thingIds.push(id);
+        }
+    }
+
+    /** Remove a Thing from this square if it's there */
+    removeThing(thing: Thing | ThingID) {
+        const id = thing instanceof Thing ? thing.id : thing;
+        const thingIndex = this.thingIds.indexOf(id);
+        if (thingIndex > -1) {
+            this.thingIds.splice(thingIndex, 1);
+        }
     }
 
     /** Get another square in this grid relative to this square. Negative numbers for up and left, positive for down and right */
@@ -74,6 +97,7 @@ export class Grid {
     width: number;
     height: number;
     squares: {[key: string]: GridSquare};
+    private squaresArray: GridSquare[] = [];
 
     /** Pass it an array of strings like this: 
      * 'XXX'
@@ -99,7 +123,9 @@ export class Grid {
 
         basicLayout.forEach((row, rowIndex) => {
             row.split('').forEach((column, columnIndex) => {
-                this.squares[`${columnIndex}-${rowIndex}`] = new GridSquare(this, columnIndex, rowIndex, column.toUpperCase() === 'X');
+                const square = new GridSquare(this, columnIndex, rowIndex, column.toUpperCase() !== 'X');
+                this.squares[`${columnIndex}-${rowIndex}`] = square;
+                this.squaresArray.push(square);
             });
         });
 
@@ -108,6 +134,11 @@ export class Grid {
 
     getSquare(x: number, y: number): Maybe<GridSquare> {
         return this.squares[`${x}-${y}`];
+    }
+
+    /** Remove a thing from all squares in this grid */
+    removeThing(thing: Thing | ThingID) {
+        this.squaresArray.forEach((square) => square.removeThing(thing));
     }
 
     static byId(id: GridId): Maybe<Grid> {

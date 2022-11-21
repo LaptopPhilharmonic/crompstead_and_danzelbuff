@@ -26,7 +26,7 @@ export enum Units {
     pc = '%',
 }
 
-export type RenderNodeData = {
+export interface RenderNodeData {
     /** Default: 0 */
     x?: Maybe<number>;
     /** Default: scene */
@@ -58,6 +58,11 @@ export type RenderNodeData = {
     parent?: RenderNodeID;
     children?: RenderNodeID[];
     scene?: SceneID;
+
+    /** How many pixels to add (or subtract) when positioning this RenderNode */
+    offsetX?: number;
+    /** How many pixels to add (or subtract) when positioning this RenderNode */
+    offsetY?: number;
 }
 
 export class RenderNode implements IndexableClass {
@@ -84,6 +89,9 @@ export class RenderNode implements IndexableClass {
     private parentId?: RenderNodeID;
     children: RenderNodeID[];
 
+    offsetX: number;
+    offsetY: number;
+
     constructor(data: RenderNodeData) {
         this.id = new RenderNodeID();
         this.xx = data.x ?? 0;
@@ -101,6 +109,8 @@ export class RenderNode implements IndexableClass {
         this.parentId = data.parent;
         this.children = data.children ?? [];
         this.sceneId = data.scene;
+        this.offsetX = data.offsetX ?? 0;
+        this.offsetY = data.offsetY ?? 0;
 
         allNodes[this.id.number] = this;
     }
@@ -182,20 +192,12 @@ export class RenderNode implements IndexableClass {
         return this.getXYWH('x');
     }
 
-    set x(x: number) {
-        this.xx = x;
-    }
-
     setX(x: number, unit?: Units, relativeTo?: RelativeTo) {
         this.setXYWH('x', x, unit, relativeTo);
     }
 
     get y(): number {
         return this.getXYWH('y');
-    }
-
-    set y(y: number) {
-        this.yy = y;
     }
 
     setY(y: number, unit?: Units, relativeTo?: RelativeTo) {
@@ -275,7 +277,7 @@ export class RenderNode implements IndexableClass {
         } else if (scene instanceof SceneID) {
             this.sceneId = scene;
         } else {
-            throw new TypeError('scene must be set to Scene or SceneID instance');
+            this.sceneId = undefined;
         }
     }
 
