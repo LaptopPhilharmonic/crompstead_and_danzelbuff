@@ -90,6 +90,8 @@ export class Walk extends Action {
         renderNode.setX(this.fromPx.x);
         renderNode.setY(this.fromPx.y);
         this.person.currentRenderNode = renderNode;
+        this.person.gridX = this.toSquare.x;
+        this.person.gridY = this.toSquare.y;
     }
 
     update(frameTimeStamp: number) {
@@ -98,8 +100,6 @@ export class Walk extends Action {
             this.person.currentRenderNode.setX(this.fromPx.x + Math.round(this.xChange * amountComplete));
             this.person.currentRenderNode.setY(this.fromPx.y + Math.round(this.yChange * amountComplete));
         } else {
-            this.person.gridX = this.toSquare.x;
-            this.person.gridY = this.toSquare.y;
             this.person.snapCurrentRenderNodeToGrid();
             this.finish();
         }

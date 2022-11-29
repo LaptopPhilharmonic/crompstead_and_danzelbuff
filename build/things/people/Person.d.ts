@@ -10,6 +10,7 @@ export interface Directional<T> {
 export interface PersonRenderNodes {
     standing: Directional<ImageNode>;
     walking: Directional<AnimationNode>;
+    idle1: Directional<AnimationNode>;
 }
 export declare type PersonData = ThingData & {
     firstName: string;
@@ -25,14 +26,18 @@ export declare class Person extends Thing {
     renderNodes: PersonRenderNodes;
     direction: Direction;
     private currentRenderNodeId;
-    gridX: number;
-    gridY: number;
+    private _gridX;
+    private _gridY;
     private locationId;
     acceptingInput: boolean;
     private actionQueue;
     private static spriteOffsetX;
     private static spriteOffsetY;
+    following: Maybe<Person>;
+    followedBy: Maybe<Person>;
+    private nextFidgetTime;
     constructor(data: PersonData);
+    private updateFidgetTime;
     private makeDirectionalImage;
     private makeDirectionalAnimation;
     get location(): Maybe<Location>;
@@ -40,16 +45,27 @@ export declare class Person extends Thing {
     /** Moves this person to the Location specified, updation any current Location and the new Location objects as appropriate */
     goesTo(location: Location | SceneID, gridX: number, gridY: number): void;
     snapCurrentRenderNodeToGrid(): void;
+    /** Calling this removes this Person from their current grid-based RenderNode (if they have one), and inserts them into a new one based on location and gridY */
+    updateGridRenderSlot(): void;
+    /** Adds a Wait action to this Person's queue */
+    waits(millis: number): void;
+    set gridY(y: number);
+    get gridY(): number;
+    set gridX(x: number);
+    get gridX(): number;
     handleInput(input: InputData): void;
     /** Queue up an action */
     addAction(action: Action): void;
     /** Queue up a list of actions (they will be in the order provided) */
     addActions(actions: Action[]): void;
     private walks;
+    /** Check if this Person's action queue is empty */
+    get isIdle(): boolean;
     walksUp(squares?: number): Person;
     walksDown(squares?: number): Person;
     walksLeft(squares?: number): Person;
     walksRight(squares?: number): Person;
+    walksTowards(x: number, y: number): void;
     private canWalkTo;
     get canWalkUp(): boolean;
     get canWalkDown(): boolean;
@@ -59,4 +75,8 @@ export declare class Person extends Thing {
     /** The current RenderNode always gets put in the Location of this Person */
     set currentRenderNode(node: RenderNode | RenderNodeID);
     get currentRenderNode(): RenderNode;
+    follows(otherPerson: Person): void;
+    stopsFollowing(): void;
+    /** Is this person one square up, down, left or right of the other person */
+    isNextTo(otherPerson: Person): boolean;
 }

@@ -47,9 +47,11 @@ export class Renderer {
         }
 
         scene.renderNodes.forEach((renderNode: RenderNode) => {
-            this.renderNode(renderNode, renderTime, camera);
+            if (renderNode.visible) {
+                this.renderNode(renderNode, renderTime, camera);
+            }
         });
-
+        
         this.context.restore();
     }
 

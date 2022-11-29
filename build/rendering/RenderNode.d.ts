@@ -66,9 +66,13 @@ export declare class RenderNode implements IndexableClass {
     children: RenderNodeID[];
     offsetX: number;
     offsetY: number;
+    /** Will not render if this is set to false */
+    visible: boolean;
     constructor(data: RenderNodeData);
-    get parent(): RenderNode | null;
-    set parent(p: RenderNode | RenderNodeID | null);
+    get parent(): Maybe<RenderNode>;
+    set parent(p: Maybe<RenderNode>);
+    /** Removes this RenderNode from its parent and Scene */
+    detach(): void;
     /** All these properties have code in common to deal with unit types and relativity to parents */
     private getXYWH;
     private setXYWH;
@@ -82,12 +86,14 @@ export declare class RenderNode implements IndexableClass {
     get h(): number;
     set h(h: number);
     setH(h: number, unit?: Units, relativeTo?: RelativeTo): void;
-    addChild(child: RenderNode | RenderNodeID): void;
-    removeChild(child: RenderNode | RenderNodeID): void;
+    /** Adds the node as a child of this node, removing any parent relationship it already has. Returns same node for chaining. */
+    addChild(child: RenderNode): RenderNode;
+    removeChild(child: RenderNode): void;
+    isParentOf(child: RenderNode): boolean;
     /** Looks recursively to parent nodes to establish what Scene this RenderNode is in */
     get scene(): Maybe<Scene>;
     /** Should only be set on top-level RenderNodes (attached directly to a Scene). Children inherit from the parent. Will throw errors otherwise */
-    set scene(scene: Maybe<Scene> | SceneID);
+    set scene(scene: Maybe<Scene>);
     get hasChildren(): boolean;
     forEachChild(fn: (childNode: RenderNode) => void): void;
     /** Remove all references to this RenderNode and any of its children which would otherwise be floating around */

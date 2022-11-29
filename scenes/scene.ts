@@ -40,37 +40,34 @@ export class Scene {
     }
 
     /** Adds a render node, and returns that node for reference. Unless it doesn't exist - it'll throw an error then. */
-    addRenderNode(node: RenderNode | RenderNodeID): RenderNode {
-        const id = node instanceof RenderNode ? node.id : node;
-        if (!this.renderNodeIDs.includes(id)) {
-            this.renderNodeIDs.push(id);
+    addRenderNode(node: RenderNode): RenderNode {
+        if (!this.isParentOf(node)) {
+            node.detach();
+            this.renderNodeIDs.push(node.id);
+            node.scene = this;
         }
-        const actualNode = node instanceof RenderNode ? node : RenderNode.byId(id);
-        if (!actualNode) {
-            throw new Error(`No RenderNode exists with ID ${id}`);
-        }
-        actualNode.scene = this.id;
-        return actualNode;
+        return node;
     }
 
-    addRenderNodes(nodes: RenderNode[] | RenderNodeID[]) {
+    addRenderNodes(nodes: RenderNode[]) {
         nodes.forEach((node) => this.addRenderNode(node));
     }
 
+    isParentOf(node: RenderNode) {
+        return !!this.renderNodeIDs.find((id) => id.number === node.id.number);
+    }
+
     /** Removes the ID of the RenderNode from this Scene, but does not delete the RenderNode itself */
-    removeRenderNode(node: RenderNode | RenderNodeID) {
-        const id = node instanceof RenderNode ? node.id : node;
-        if (this.renderNodeIDs.includes(id)) {
-            this.renderNodeIDs = this.renderNodeIDs.filter((n) => n !== id)
+    removeRenderNode(node: RenderNode) {
+        const index = this.renderNodeIDs.findIndex((n) => n.number === node.id.number);
+        if (index > -1) {
+            this.renderNodeIDs.splice(index, 1);
         }
-        const actualNode = node instanceof RenderNode ? node : RenderNode.byId(node);
-        if (actualNode) {
-            actualNode.scene = null;
-        }
+        node.scene = null;
     }
 
     /** Removes the IDs of the RenderNodes from this Scene, but does not delete the RenderNodes themselves */
-    removeRenderNodes(nodes: RenderNode[] | RenderNodeID[]) {
+    removeRenderNodes(nodes: RenderNode[]) {
         nodes.forEach((n) => this.removeRenderNode(n));
     }
 

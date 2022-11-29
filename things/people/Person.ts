@@ -1,7 +1,9 @@
-import { Thing, ThingData, AnimationNode, ImageNode, SceneID, Location, Scene, InputData, RenderNodeID, RenderNode, Action, Walk, WalkDirection } from '../../import-manager.js';
+import { Thing, ThingData, AnimationNode, ImageNode, SceneID, Location, Scene, InputData, RenderNodeID, RenderNode, Action, Walk, WalkDirection, Wait } from '../../import-manager.js';
 import { Maybe, definitely } from '../../util/typescript-helpers.js';
+import { randomInt } from '../../util/math-heleprs.js';
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
+let firstUpdate = true;
 
 export interface Directional<T> {
     up: T,
@@ -13,6 +15,7 @@ export interface Directional<T> {
 export interface PersonRenderNodes {
     standing: Directional<ImageNode>,
     walking: Directional<AnimationNode>,
+    idle1: Directional<AnimationNode>,
 }
 
 export type PersonData = ThingData & {
@@ -30,13 +33,16 @@ export class Person extends Thing {
     renderNodes: PersonRenderNodes;
     direction: Direction;
     private currentRenderNodeId: RenderNodeID;
-    gridX: number = 0;
-    gridY: number = 0;
+    private _gridX: number = 0;
+    private _gridY: number = 0;
     private locationId: Maybe<SceneID>;
     acceptingInput: boolean = false;
     private actionQueue: Action[];
     private static spriteOffsetX: number = -24;
     private static spriteOffsetY: number = -38;
+    following: Maybe<Person>
+    followedBy: Maybe<Person>
+    private nextFidgetTime: number;
 
     constructor(data: PersonData) {
         super(data);
@@ -46,11 +52,17 @@ export class Person extends Thing {
         this.imgFolder = data.imgFolder;
         this.renderNodes = {
             standing: this.makeDirectionalImage('standing'),
-            walking: this.makeDirectionalAnimation('walking', 64, 64, 200, true)
+            walking: this.makeDirectionalAnimation('walking', 64, 64, 200, true),
+            idle1: this.makeDirectionalAnimation('idle-1', 64, 64, 200, false)
         }
         this.currentRenderNodeId = this.renderNodes.standing.down.id;
         this.actionQueue = [];
         this.direction = 'down';
+        this.nextFidgetTime = Infinity;
+    }
+
+    private updateFidgetTime(frameTimeStamp: number) {
+        this.nextFidgetTime = frameTimeStamp + (randomInt(5, 15) * 500);
     }
 
     private makeDirectionalImage(imageType: string): Directional<ImageNode> {
@@ -90,27 +102,58 @@ export class Person extends Thing {
             throw new Error(`Invalid Location not provided - argument was ${location}`);
         }
 
-        this.locationId = location instanceof Location ? location.id : location;
+        this.locationId = newLocation.id;
 
-        currentLocation?.removeRenderNode(this.currentRenderNode);
         currentLocation?.grid.removeThing(this);
 
-        newLocation.addRenderNode(this.currentRenderNode);
         newLocation.grid.getSquare(gridX, gridY)?.addThing(this);
+
         this.gridX = gridX;
         this.gridY = gridY;
+
+        this.currentRenderNode = this.currentRenderNodeId;
         this.snapCurrentRenderNodeToGrid();
     }
 
     snapCurrentRenderNodeToGrid() {
         this.currentRenderNode.setX(this.gridX * (this.location?.gridSize ?? 1));
         this.currentRenderNode.setY(this.gridY * (this.location?.gridSize ?? 1));
+        this.updateGridRenderSlot();
+    }
+
+    /** Calling this removes this Person from their current grid-based RenderNode (if they have one), and inserts them into a new one based on location and gridY */
+    updateGridRenderSlot() {
+        this.location?.addRenderNodeAtY(this.currentRenderNode, this.gridY);
+    }
+
+    /** Adds a Wait action to this Person's queue */
+    waits(millis: number) {
+        this.addAction(new Wait(this, millis));
+    }
+
+    set gridY(y: number) {
+        this._gridY = y;
+        this.updateGridRenderSlot();
+        this.snapCurrentRenderNodeToGrid();
+    }
+
+    get gridY() {
+        return this._gridY;
+    }
+
+    set gridX(x: number) {
+        this._gridX = x;
+        this.snapCurrentRenderNodeToGrid();
+    }
+
+    get gridX() {
+        return this._gridX;
     }
 
     override handleInput(input: InputData) {
         if (this.acceptingInput && (!this.currentAction || this.currentAction.complete)) {
             if (input.up.held) {
-                this.direction = 'up';
+                this.direction = "up";
                 if (this.canWalkUp) {
                     this.walksUp();
                 }
@@ -144,9 +187,21 @@ export class Person extends Thing {
     }
 
     private walks(direction: WalkDirection, squares: number = 1) {
+        this.direction = direction;
         for (let i = 0; i < squares; i += 1) {
+            if (this.followedBy) {
+                if (this.isIdle && this.followedBy.isIdle) {
+                    this.followedBy.waits(100);
+                }
+                this.followedBy?.walksTowards(this._gridX, this._gridY);
+            }
             this.addAction(new Walk(this, direction));
         }
+    }
+
+    /** Check if this Person's action queue is empty */
+    get isIdle() {
+        return this.actionQueue.length === 0;
     }
 
     walksUp(squares: number = 1): Person {
@@ -167,6 +222,28 @@ export class Person extends Thing {
     walksRight(squares: number = 1): Person {
         this.walks('right', squares);
         return this;
+    }
+
+    walksTowards(x: number, y: number) {
+        const xDiff = this.gridX - x;
+        const yDiff = this.gridY - y;
+        if (Math.abs(xDiff) > Math.abs(yDiff)) {
+            if (xDiff < 0 && this.canWalkRight) {
+                this.walksRight();
+                return;
+            }
+            if (xDiff > 0 && this.canWalkLeft) {
+                this.walksLeft();
+                return;
+            }
+        }
+        if (yDiff < 0 && this.canWalkDown) {
+            this.walksDown();
+            return;
+        }
+        if (yDiff > 0 && this.canWalkUp) {
+            this.walksUp();
+        }
     }
 
     private canWalkTo(x: number, y: number) {
@@ -190,36 +267,82 @@ export class Person extends Thing {
     }
 
     override update(frameTimeStamp: number) {
+        if (firstUpdate) {
+            this.updateFidgetTime(frameTimeStamp);
+        }
         if (this.currentAction) {
             if (!this.currentAction.inProgress && !this.currentAction.complete) {
                 this.currentAction.start();
             }
             if (this.currentAction.complete) {
                 this.actionQueue.shift();
+                if (this.actionQueue.length === 0) { // Going idle...
+                    this.updateFidgetTime(frameTimeStamp);
+                    this.currentRenderNode = this.renderNodes.standing[this.direction];
+                }
                 this.update(frameTimeStamp);
             } else {
                 this.currentAction.update(frameTimeStamp);
             }
         } else { // Idle
-            this.currentRenderNode = this.renderNodes.standing[this.direction];
+            if (frameTimeStamp > this.nextFidgetTime) {
+                const fidgetNode = this.renderNodes.idle1[this.direction];
+                fidgetNode.reset();
+                this.currentRenderNode = fidgetNode;
+                this.updateFidgetTime(frameTimeStamp);
+            }
             this.snapCurrentRenderNodeToGrid();
         }
+
+        firstUpdate = false;
     }
 
     /** The current RenderNode always gets put in the Location of this Person */
     set currentRenderNode(node: RenderNode | RenderNodeID) {
         if (this.currentRenderNodeId) {
-            this.location?.removeRenderNode(this.currentRenderNodeId)
+            this.currentRenderNode.detach();
         }
         if (node instanceof RenderNode) {
             this.currentRenderNodeId = node.id;
         } else {
             this.currentRenderNodeId = node;
         }
-        this.location?.addRenderNode(this.currentRenderNodeId);
+        this.location?.addRenderNodeAtY(this.currentRenderNode, this.gridY);
     }
 
     get currentRenderNode(): RenderNode {
         return definitely(RenderNode.byId(this.currentRenderNodeId));
+    }
+
+    // Tell this person to keep walking after another person
+    follows(otherPerson: Person) {
+        this.following = otherPerson;
+        otherPerson.followedBy = this;
+    }
+
+    stopsFollowing() {
+        if (this.following?.followedBy) {
+            this.following.followedBy = undefined;
+        }
+        this.following = undefined;
+    }
+
+    /** Is this person one square up, down, left or right of the other person */
+    isNextTo(otherPerson: Person): boolean {
+        if (this.location !== otherPerson.location) {
+            return false;
+        }
+        const xDiff = Math.abs(this.gridX - otherPerson.gridX);
+        if (xDiff > 1) {
+            return false;
+        }
+        const yDiff = Math.abs(this.gridY - otherPerson.gridY);
+        if (yDiff > 1) {
+            return false;
+        }
+        if (xDiff === 1 && yDiff === 1) {
+            return false;
+        }
+        return true;
     }
 }

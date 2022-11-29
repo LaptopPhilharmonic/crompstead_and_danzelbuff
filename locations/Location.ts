@@ -1,5 +1,5 @@
 import { Scene } from '../import-manager.js';
-import { ImageNode, AnimationNode, RenderNode, Units, RelativeTo } from '../import-manager.js';
+import { ImageNode, AnimationNode, RenderNode, RenderNodeID, Units, RelativeTo } from '../import-manager.js';
 import { Grid, GridId } from '../import-manager.js';
 import { gameData } from '../ElectronicaGame';
 
@@ -70,5 +70,15 @@ export class Location extends Scene {
         rowNode.addChild(animation);
         animation.setX(gridX * GRIDSIZE, Units.px, RelativeTo.parent);
         animation.setY((animation.h - GRIDSIZE) * -1, Units.px, RelativeTo.parent);
+    }
+
+    addRenderNodeAtY(node: RenderNode, yValue: number) {
+        this.yIndexedLayers[yValue].addChild(node);
+    }
+
+    removeYIndexedRenderNode(node: RenderNode) {
+        const nodeId = node instanceof RenderNodeID ? node : node.id;
+        const yIndexed = this.yIndexedLayers.find((layer) => layer.children.includes(nodeId));
+        yIndexed?.removeChild(node);
     }
 }

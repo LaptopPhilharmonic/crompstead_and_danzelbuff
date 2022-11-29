@@ -1,5 +1,5 @@
 import { Scene, SceneID } from '../import-manager.js';
-import { IndexableClass, Maybe } from '../util/typescript-helpers.js';
+import { IndexableClass, Maybe, definitely } from '../util/typescript-helpers.js';
 
 let nextId = 1;
 
@@ -92,6 +92,9 @@ export class RenderNode implements IndexableClass {
     offsetX: number;
     offsetY: number;
 
+    /** Will not render if this is set to false */
+    visible: boolean = true;
+
     constructor(data: RenderNodeData) {
         this.id = new RenderNodeID();
         this.xx = data.x ?? 0;
@@ -115,26 +118,27 @@ export class RenderNode implements IndexableClass {
         allNodes[this.id.number] = this;
     }
 
-    get parent(): RenderNode | null {
-        return this.parentId ? allNodes[this.parentId.number] : null;
+    get parent(): Maybe<RenderNode> {
+        return this.parentId ? allNodes[this.parentId.number] : undefined;
     }
 
-    set parent(p: RenderNode | RenderNodeID | null) {
+    set parent(p: Maybe<RenderNode>) {
+        this.detach();
         if (p instanceof RenderNode) {
             this.parentId = p.id;
-            if (p.children.includes(this.id)) {
-                p.children.push(this.id);
-            }
-        } else if (p instanceof RenderNodeID) {
-            const parentNode = allNodes[p.number];
-            if (parentNode) {
-                this.parent = p;
-                parentNode.addChild(this);
-            } else {
-                throw new Error(`No RenderNode found with id ${p.number}`);
-            }
+            p.addChild(this);
         } else {
-            throw new TypeError('parent can only be set to a RenderNode or a RenderNodeID');
+            this.parentId = undefined;
+        }
+    }
+
+    /** Removes this RenderNode from its parent and Scene */
+    detach() {
+        if (this.parent) {
+            this.parent.removeChild(this);
+        }
+        if (this.sceneId) {
+            this.scene?.removeRenderNode(this);
         }
     }
 
@@ -145,12 +149,12 @@ export class RenderNode implements IndexableClass {
         const relativeTo = this[setting + 'RelativeTo'] as RelativeTo;
         const unit = this[setting + 'Unit'] as Units;
 
-        if (!this.scene) {
-            throw new Error(`RenderNode with id ${this.id.number} is not in a Scene`);
-        }
-
         switch (relativeTo) {
             case RelativeTo.scene:
+                if (!this.scene) {
+                    console.error(this);
+                    throw new Error(`RenderNode with id ${this.id.number} is not in a Scene but is position relative to scene`);
+                }
                 if (unit === Units.px) {
                     return this[nn];
                 } else if (unit === Units.pc) {
@@ -166,6 +170,10 @@ export class RenderNode implements IndexableClass {
                         return this.parent[orientation] * this[nn];
                     }
                 } else {
+                    if (!this.scene) {
+                        console.error(this);
+                        throw new Error(`RenderNode with id ${this.id.number} is not in a Scene, and has no parent, but is positioned relative to parent`);
+                    }
                     if (unit === Units.px) {
                         return this[nn];
                     } else if (unit === Units.pc) {
@@ -228,34 +236,30 @@ export class RenderNode implements IndexableClass {
         this.setXYWH('h', h, unit, relativeTo);        
     }
 
-    addChild(child: RenderNode | RenderNodeID) {
+    /** Adds the node as a child of this node, removing any parent relationship it already has. Returns same node for chaining. */
+    addChild(child: RenderNode): RenderNode {
         if (child instanceof RenderNode) {
-            if (!this.children.includes(child.id)) {
+            if (!this.children.find((c) => c.number === child.id.number)) {
+                child.detach();
                 this.children.push(child.id);
                 child.parent = this;
-            }
-        } else if (child instanceof RenderNodeID) {
-            const childNode = allNodes[child.number];
-            if (childNode && !this.children.includes(child)) {
-                this.children.push(child);
-                childNode.parent = this;
-            } else if (!childNode) {
-                throw new Error(`No RenderNode found with id ${child.number}`);
             }
         } else {
             throw new TypeError('children must be supplied as RenderNode or RenderNodeID');            
         }
+        return child;
     }
 
-    removeChild(child: RenderNode | RenderNodeID) {
-        if (!(child instanceof RenderNode || child instanceof RenderNodeID)) { 
-            throw new TypeError('children must be supplied as RenderNode or RenderNodeID');     
-        }
-        const childId = child instanceof RenderNodeID ? child : child.id;
-        const index = this.children.indexOf(childId);
+    removeChild(child: RenderNode) {
+        const index = this.children.findIndex((c) => c.number === child.id.number);
         if (index > -1) {
-            this.children = this.children.splice(index, 1)
+            this.children.splice(index, 1);
         }
+        child.parentId = undefined;
+    }
+
+    isParentOf(child: RenderNode): boolean {
+        return !!this.children.find((c) => c.number === child.number);
     }
 
     /** Looks recursively to parent nodes to establish what Scene this RenderNode is in */
@@ -268,14 +272,12 @@ export class RenderNode implements IndexableClass {
     }
 
     /** Should only be set on top-level RenderNodes (attached directly to a Scene). Children inherit from the parent. Will throw errors otherwise */
-    set scene(scene: Maybe<Scene> | SceneID) {
+    set scene(scene: Maybe<Scene>) {
         if (this.parentId) {
             throw new Error(`This RenderNode has a parent and should not have its Scene changed directly.`)
         }
         if (scene instanceof Scene) {
             this.sceneId = scene.id;
-        } else if (scene instanceof SceneID) {
-            this.sceneId = scene;
         } else {
             this.sceneId = undefined;
         }
@@ -297,8 +299,7 @@ export class RenderNode implements IndexableClass {
     /** Remove all references to this RenderNode and any of its children which would otherwise be floating around */
     delete() {
         this.forEachChild((child) => child.delete());
-        this.parent?.removeChild(this);
-        this.scene?.removeRenderNode(this);
+        this.detach();
         delete allNodes[this.id.number];
     }
 

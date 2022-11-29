@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.randomInt = void 0;
+function randomInt(from, to) {
+    const roundedFrom = Math.round(from);
+    const roundedTo = Math.round(to);
+    const diff = roundedTo - roundedFrom;
+    return roundedFrom + Math.round(Math.random() * diff);
+}
+exports.randomInt = randomInt;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibWF0aC1oZWxlcHJzLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vdXRpbC9tYXRoLWhlbGVwcnMudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7O0FBQUEsU0FBZ0IsU0FBUyxDQUFDLElBQVksRUFBRSxFQUFVO0lBQzlDLE1BQU0sV0FBVyxHQUFHLElBQUksQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLENBQUM7SUFDckMsTUFBTSxTQUFTLEdBQUcsSUFBSSxDQUFDLEtBQUssQ0FBQyxFQUFFLENBQUMsQ0FBQztJQUNqQyxNQUFNLElBQUksR0FBRyxTQUFTLEdBQUcsV0FBVyxDQUFDO0lBQ3JDLE9BQU8sV0FBVyxHQUFHLElBQUksQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLE1BQU0sRUFBRSxHQUFHLElBQUksQ0FBQyxDQUFDO0FBQzFELENBQUM7QUFMRCw4QkFLQyIsInNvdXJjZXNDb250ZW50IjpbImV4cG9ydCBmdW5jdGlvbiByYW5kb21JbnQoZnJvbTogbnVtYmVyLCB0bzogbnVtYmVyKTogbnVtYmVyIHtcclxuICAgIGNvbnN0IHJvdW5kZWRGcm9tID0gTWF0aC5yb3VuZChmcm9tKTtcclxuICAgIGNvbnN0IHJvdW5kZWRUbyA9IE1hdGgucm91bmQodG8pO1xyXG4gICAgY29uc3QgZGlmZiA9IHJvdW5kZWRUbyAtIHJvdW5kZWRGcm9tO1xyXG4gICAgcmV0dXJuIHJvdW5kZWRGcm9tICsgTWF0aC5yb3VuZChNYXRoLnJhbmRvbSgpICogZGlmZik7XHJcbn0iXX0=

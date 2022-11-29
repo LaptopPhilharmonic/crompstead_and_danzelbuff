@@ -26,7 +26,7 @@ export class AnimationNode extends RenderNode {
         this.imageName = data.imageName;
         this.frameMillis = data.frameMillis;
         this.lastRenderTime = 0;
-        this.currentFrame = 0;
+        this.currentFrame = -1;
         this.loops = data.loops ?? true;
 
         const img = gameData.images.byKey[this.imageName];
@@ -46,5 +46,11 @@ export class AnimationNode extends RenderNode {
             }
         }
         return this.currentFrame;
+    }
+
+    /** Sets the lastRenderTime and currentFrame to 0. Good for resetting non-looping animations */
+    reset() {
+        this.lastRenderTime = 0;
+        this.currentFrame = -1;        
     }
 }

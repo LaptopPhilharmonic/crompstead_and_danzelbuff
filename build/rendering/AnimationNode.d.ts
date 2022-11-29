@@ -20,4 +20,6 @@ export declare class AnimationNode extends RenderNode {
     constructor(data: AnimationNodeData);
     /** Updates the currentFrame and lastRenderTime, and returns the new frame number */
     updateFrame(renderTime: number): number;
+    /** Sets the lastRenderTime and currentFrame to 0. Good for resetting non-looping animations */
+    reset(): void;
 }

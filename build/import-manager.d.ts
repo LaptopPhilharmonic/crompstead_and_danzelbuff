@@ -13,5 +13,6 @@ export * from './locations/Location.js';
 export * from './input/InputManager.js';
 export * from './things/people/action/Action.js';
 export * from './things/people/action/Walk.js';
+export * from './things/people/action/Wait.js';
 export * from './ElectronicaGame.js';
 export * as stationLobby from './locations/station-lobby.js';

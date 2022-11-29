@@ -1,6 +1,7 @@
 import { Location } from '../import-manager.js';
 import { Grid } from '../import-manager.js';
 import { AnimationNode, Crompstead } from '../import-manager.js';
+import { Danzelbuff } from '../things/people/Danzelbuff.js';
 
 export function init(): Location { 
     const lobby = new Location(240, 160, 'places/station-lobby.png', new Grid([
@@ -31,9 +32,13 @@ export function init(): Location {
     lobby.addGridImage(8, 2, 'objects/water-cooler.png');
     lobby.addGridImage(9, 2, 'objects/station-bin.png');
 
-    const crompstead = new Crompstead;
+    const crompstead = new Crompstead();
+    const danzelbuff = new Danzelbuff();
     crompstead.goesTo(lobby, 2, 7);
     crompstead.acceptingInput = true;
+
+    danzelbuff.goesTo(lobby, 1, 7);
+    danzelbuff.follows(crompstead);
 
     return lobby;
 }

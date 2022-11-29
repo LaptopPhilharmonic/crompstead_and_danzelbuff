@@ -16,4 +16,6 @@ export declare class Location extends Scene {
     /** Add an ImageNode snapped to the appropriate X and Y positions for it to */
     addGridImage(gridX: number, gridY: number, imageName: string): void;
     addGridAnimation(gridX: number, gridY: number, animation: AnimationNode): void;
+    addRenderNodeAtY(node: RenderNode, yValue: number): void;
+    removeYIndexedRenderNode(node: RenderNode): void;
 }
