@@ -190,9 +190,6 @@ export class Person extends Thing {
         this.direction = direction;
         for (let i = 0; i < squares; i += 1) {
             if (this.followedBy) {
-                if (this.isIdle && this.followedBy.isIdle) {
-                    this.followedBy.waits(100);
-                }
                 this.followedBy?.walksTowards(this._gridX, this._gridY);
             }
             this.addAction(new Walk(this, direction));
