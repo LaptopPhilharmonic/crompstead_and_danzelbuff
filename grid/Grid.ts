@@ -1,5 +1,6 @@
 import { Maybe, filterDefinitely } from '../util/typescript-helpers.js';
 import { ThingID, Thing } from '../import-manager.js';
+import { getRoute } from './pathfinder.js';
 
 /** For managing data for grid-based game logic */
 
@@ -15,6 +16,11 @@ export class GridId {
     }
 }
 
+export interface Coordinates {
+    x: number;
+    y: number;
+}
+
 export class GridSquare {
     private gridId: GridId;
     x: number;
@@ -22,6 +28,8 @@ export class GridSquare {
     walkable: boolean;
     interactionKey: string;
     walkoverKey: string;
+    /** The absolute reference number for this square - (y * width) + x */
+    refNumber: number;
     private thingIds: ThingID[] = [];
 
     constructor(grid: Grid, x: number, y: number, walkable: boolean) {
@@ -31,6 +39,7 @@ export class GridSquare {
         this.walkable = walkable;
         this.interactionKey = '';
         this.walkoverKey = '';
+        this.refNumber = (y * grid.width) + x;
     }
 
     get parentGrid(): Grid {
@@ -51,6 +60,10 @@ export class GridSquare {
 
     get things(): Thing[] {
         return filterDefinitely(this.thingIds.map((id) => Thing.byId(id)));
+    }
+
+    get coordinates(): Coordinates {
+        return { x: this.x, y: this.y };
     }
 
     /** Add a Thing to this square (if it isn't there already) */
@@ -84,11 +97,24 @@ export class GridSquare {
     }
 
     getNeighbourBelow(): Maybe<GridSquare> {
-        return this.getRelativeNeighbour(1, 0);
+        return this.getRelativeNeighbour(0, 1);
     }
 
     getNeighbourToLeft(): Maybe<GridSquare> {
-        return this.getRelativeNeighbour(0, -1);
+        return this.getRelativeNeighbour(-1, 0);
+    }
+
+    getAllNeighbours(): GridSquare[] {
+        const neighbours = [];
+        const above = this.getNeighbourAbove();
+        const below = this.getNeighbourBelow();
+        const toLeft = this.getNeighbourToLeft();
+        const toRight = this.getNeighbourToRight();
+        if (above) { neighbours.push(above); }
+        if (below) { neighbours.push(below); }
+        if (toLeft) { neighbours.push(toLeft); }
+        if (toRight) { neighbours.push(toRight); }
+        return neighbours;
     }
 }
 
@@ -139,6 +165,17 @@ export class Grid {
     /** Remove a thing from all squares in this grid */
     removeThing(thing: Thing | ThingID) {
         this.squaresArray.forEach((square) => square.removeThing(thing));
+    }
+
+    /** Use an algorithm to find a path from the first square to the second. Returns an empty array if it fails */
+    findPath(from: Coordinates, to: Coordinates): GridSquare[] {
+        const fromSquare = this.getSquare(from.x, from.y);
+        const toSquare = this.getSquare(to.x, to.y);
+        if (fromSquare && toSquare) {
+            return getRoute(fromSquare, toSquare);
+        } else {
+            return [];
+        }
     }
 
     static byId(id: GridId): Maybe<Grid> {

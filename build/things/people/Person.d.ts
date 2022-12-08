@@ -1,4 +1,4 @@
-import { Thing, ThingData, AnimationNode, ImageNode, SceneID, Location, InputData, RenderNodeID, RenderNode, Action } from '../../import-manager.js';
+import { Thing, ThingData, AnimationNode, ImageNode, SceneID, Location, InputData, RenderNodeID, RenderNode, Action, GridSquare } from '../../import-manager.js';
 import { Maybe } from '../../util/typescript-helpers.js';
 export declare type Direction = 'up' | 'down' | 'left' | 'right';
 export interface Directional<T> {
@@ -36,6 +36,7 @@ export declare class Person extends Thing {
     following: Maybe<Person>;
     followedBy: Maybe<Person>;
     private nextFidgetTime;
+    private firstUpdate;
     constructor(data: PersonData);
     private updateFidgetTime;
     private makeDirectionalImage;
@@ -53,6 +54,7 @@ export declare class Person extends Thing {
     get gridY(): number;
     set gridX(x: number);
     get gridX(): number;
+    get gridSquare(): Maybe<GridSquare>;
     handleInput(input: InputData): void;
     /** Queue up an action */
     addAction(action: Action): void;

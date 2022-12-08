@@ -1,9 +1,8 @@
-import { Thing, ThingData, AnimationNode, ImageNode, SceneID, Location, Scene, InputData, RenderNodeID, RenderNode, Action, Walk, WalkDirection, Wait } from '../../import-manager.js';
+import { Thing, ThingData, AnimationNode, ImageNode, SceneID, Location, Scene, InputData, RenderNodeID, RenderNode, Action, Walk, WalkDirection, Wait, GridSquare } from '../../import-manager.js';
 import { Maybe, definitely } from '../../util/typescript-helpers.js';
 import { randomInt } from '../../util/math-heleprs.js';
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
-let firstUpdate = true;
 
 export interface Directional<T> {
     up: T,
@@ -43,6 +42,7 @@ export class Person extends Thing {
     following: Maybe<Person>
     followedBy: Maybe<Person>
     private nextFidgetTime: number;
+    private firstUpdate: boolean;
 
     constructor(data: PersonData) {
         super(data);
@@ -59,6 +59,7 @@ export class Person extends Thing {
         this.actionQueue = [];
         this.direction = 'down';
         this.nextFidgetTime = Infinity;
+        this.firstUpdate = true;
     }
 
     private updateFidgetTime(frameTimeStamp: number) {
@@ -150,6 +151,10 @@ export class Person extends Thing {
         return this._gridX;
     }
 
+    get gridSquare(): Maybe<GridSquare> {
+        return this.location?.grid.getSquare(this.gridX, this.gridY);
+    }
+
     override handleInput(input: InputData) {
         if (this.acceptingInput && (!this.currentAction || this.currentAction.complete)) {
             if (input.up.held) {
@@ -189,9 +194,6 @@ export class Person extends Thing {
     private walks(direction: WalkDirection, squares: number = 1) {
         this.direction = direction;
         for (let i = 0; i < squares; i += 1) {
-            if (this.followedBy) {
-                this.followedBy?.walksTowards(this._gridX, this._gridY);
-            }
             this.addAction(new Walk(this, direction));
         }
     }
@@ -264,7 +266,7 @@ export class Person extends Thing {
     }
 
     override update(frameTimeStamp: number) {
-        if (firstUpdate) {
+        if (this.firstUpdate) {
             this.updateFidgetTime(frameTimeStamp);
         }
         if (this.currentAction) {
@@ -283,15 +285,38 @@ export class Person extends Thing {
             }
         } else { // Idle
             if (frameTimeStamp > this.nextFidgetTime) {
-                const fidgetNode = this.renderNodes.idle1[this.direction];
-                fidgetNode.reset();
-                this.currentRenderNode = fidgetNode;
+                if (this.following && this.location === this.following.location) {
+                    const route = definitely(this.location).grid.findPath(
+                        { x: this.gridX, y: this.gridY },
+                        { x: this.following.gridX, y: this.following.gridY }
+                        );
+                    route.forEach((r, index) => {
+                        const compareTo: GridSquare = route[index - 1] ?? this.gridSquare;
+
+                        if (r.y > compareTo.y) {
+                            this.walksDown();
+                        } else if (r.y < compareTo.y) {
+                            this.walksUp();
+                        } else if (r.x < compareTo.x) {
+                            this.walksLeft();
+                        } else if (r.x > compareTo.x) {
+                            this.walksRight();
+                        }
+                    });
+                    if (route.length === 0) {
+                        this.goesTo(definitely(this.following.location), this.following.gridX, this.following.gridY);
+                    }
+                } else {
+                    const fidgetNode = this.renderNodes.idle1[this.direction];
+                    fidgetNode.reset();
+                    this.currentRenderNode = fidgetNode;
+                }
                 this.updateFidgetTime(frameTimeStamp);
             }
             this.snapCurrentRenderNodeToGrid();
         }
 
-        firstUpdate = false;
+        this.firstUpdate = false;
     }
 
     /** The current RenderNode always gets put in the Location of this Person */

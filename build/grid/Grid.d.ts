@@ -4,6 +4,10 @@ export declare class GridId {
     number: number;
     constructor();
 }
+export interface Coordinates {
+    x: number;
+    y: number;
+}
 export declare class GridSquare {
     private gridId;
     x: number;
@@ -11,12 +15,15 @@ export declare class GridSquare {
     walkable: boolean;
     interactionKey: string;
     walkoverKey: string;
+    /** The absolute reference number for this square - (y * width) + x */
+    refNumber: number;
     private thingIds;
     constructor(grid: Grid, x: number, y: number, walkable: boolean);
     get parentGrid(): Grid;
     get isInteractable(): boolean;
     get hasWalkover(): boolean;
     get things(): Thing[];
+    get coordinates(): Coordinates;
     /** Add a Thing to this square (if it isn't there already) */
     addThing(thing: Thing | ThingID): void;
     /** Remove a Thing from this square if it's there */
@@ -27,6 +34,7 @@ export declare class GridSquare {
     getNeighbourToRight(): Maybe<GridSquare>;
     getNeighbourBelow(): Maybe<GridSquare>;
     getNeighbourToLeft(): Maybe<GridSquare>;
+    getAllNeighbours(): GridSquare[];
 }
 export declare class Grid {
     id: GridId;
@@ -52,5 +60,7 @@ export declare class Grid {
     getSquare(x: number, y: number): Maybe<GridSquare>;
     /** Remove a thing from all squares in this grid */
     removeThing(thing: Thing | ThingID): void;
+    /** Use an algorithm to find a path from the first square to the second. Returns an empty array if it fails */
+    findPath(from: Coordinates, to: Coordinates): GridSquare[];
     static byId(id: GridId): Maybe<Grid>;
 }

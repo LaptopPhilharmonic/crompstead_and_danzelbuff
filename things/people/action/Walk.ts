@@ -27,13 +27,25 @@ export class Walk extends Action {
         this.person = person;
         this.direction = direction;
         this.duration = duration;
+
+        // Will be initt'd when the start() method is called
+        this.fromSquare = {x: 0, y: 0};
+        this.toSquare = {x: 0, y: 0};
+        this.fromPx = {x: 0, y: 0};
+        this.toPx = {x: 0, y: 0};
+        this.xChange = 0;
+        this.yChange = 0;
+    }
+
+    start() {
+        super.start();
         this.fromSquare = {
             x: this.person.gridX,
             y: this.person.gridY,
         }
         let toX: number | undefined = undefined;
         let toY: number | undefined = undefined;
-        switch (direction) {
+        switch (this.direction) {
             case 'up':
                 toY = this.fromSquare.y - 1;
                 break;
@@ -56,16 +68,16 @@ export class Walk extends Action {
 
         // We need to lop a pixel off the distance in the direction travelled to stop jerky walking if the key stays held in
         let xReduction = 0;
-        if (direction === 'left') {
+        if (this.direction === 'left') {
             xReduction = -1;
-        } else if (direction === 'right') {
+        } else if (this.direction === 'right') {
             xReduction = 1;
         }
 
         let yReduction = 0;
-        if (direction === 'up') {
+        if (this.direction === 'up') {
             yReduction = -1
-        } else if (direction === 'down') {
+        } else if (this.direction === 'down') {
             yReduction = 1;
         }
 
@@ -82,10 +94,7 @@ export class Walk extends Action {
             x: this.toSquare.x * gridSize,
             y: this.toSquare.y * gridSize,
         };
-    }
 
-    start() {
-        super.start();
         const renderNode = this.person.renderNodes.walking[this.direction];
         renderNode.setX(this.fromPx.x);
         renderNode.setY(this.fromPx.y);
