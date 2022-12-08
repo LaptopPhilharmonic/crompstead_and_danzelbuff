@@ -123,7 +123,7 @@ export class GameData {
             }
         } else {
             console.log(`...${(Math.round(totalLoaded / totalToLoad * 100))}%`);
-            setTimeout(() => { this.checkAllAssetsLoaded }, 100);
+            setTimeout(() => { this.checkAllAssetsLoaded() }, 100);
         }
     }
 }

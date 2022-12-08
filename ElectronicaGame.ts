@@ -1,3 +1,4 @@
+import path from 'path';
 import { GameData, InputManager, Thing } from './import-manager.js';
 import { Renderer } from './import-manager.js';
 import { stationLobby } from './import-manager.js';
@@ -26,8 +27,8 @@ export class ElectronicaGame {
 
     constructor(options: ElectronicaGameOptions) {
         this.data = new GameData({
-            imageFolder: 'assets\\images\\',
-            audioFolder: 'assets\\audio\\',
+            imageFolder: `assets${path.sep}images${path.sep}`,
+            audioFolder: `assets${path.sep}audio${path.sep}`,
             screenInfo: displayHelpers.getScreenInfo(),
             allowedImageTypes: options.allowedImageTypes ?? ['png', 'jpg'],
             allowedAudioTypes: options.allowedAudioTypes ?? ['mp3', 'wav'],
