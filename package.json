@@ -20,7 +20,7 @@
   "author": "Laptop Philharmonic",
   "license": "",
   "devDependencies": {
-    "typescript": "^4.8.4"
+    "typescript": "^4.9.4"
   },
   "dependencies": {
     "electron": "^22.0.0"
